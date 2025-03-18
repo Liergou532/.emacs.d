@@ -34,4 +34,14 @@
   (org-download-enable))
 
 
+;; support mermaid for org babel
+;; This need "mermaid-cil" mmdc
+(org-babel-do-load-languages
+'org-babel-load-languages
+'((mermaid . t)
+  (scheme . t)))
+;; org mode settings
+(setq org-startup-folded 'overview)
+;;(setq org-startup-with-inline-images t)
+
 ;;; custom-post.el ends here
