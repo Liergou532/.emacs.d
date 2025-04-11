@@ -8,6 +8,7 @@
 *.tmp
 *bak/
 .DS_Store
+.aider*
 .cache/
 .cask/
 .dap-*
