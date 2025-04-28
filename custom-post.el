@@ -125,11 +125,11 @@
    '("'" . repeat)
    '("<escape>" . ignore)))
 
-(use-package meow
-  :ensure t
-  :defer nil
-  :config
-  (meow-setup)
-  (meow-global-mode 1))
+;;(use-package meow
+;;  :ensure t
+;;  :defer nil
+;;  :config
+;;  (meow-setup)
+;;  (meow-global-mode 1))
 
 ;;; custom-post.el ends here
