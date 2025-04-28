@@ -44,6 +44,11 @@
 (setq org-startup-folded 'overview)
 ;;(setq org-startup-with-inline-images t)
 
+;; ---- org代码块相关的设置
+(setq org-src-fontify-natively 1);代码块语法高亮
+(setq org-src-tab-acts-natively 1);开启代码块语法缩进
+(setq org-edit-src-content-indentation 0);代码块初始缩进范围
+
 (defun meow-setup ()
   ;;(setq meow-cheatsheet-layout meow-cheatsheet-layout-dvorak)
   (meow-leader-define-key
@@ -131,5 +136,18 @@
 ;;  :config
 ;;  (meow-setup)
 ;;  (meow-global-mode 1))
+
+;; org-download save all pngs to a directory
+;; with the same name of buffer
+;;(setq org-download-method 'my/org-download-method)
+(defun my-org-download-method (link)
+  (let ((filename
+         (file-name-nondirectory
+          (car (url-path-and-query
+                (url-generic-parse-url link)))))
+        (dirname (concat (file-name-sans-extension (buffer-name)) "-img")))
+    (make-directory dirname)
+    (expand-file-name filename dirname)))
+(setq org-download-method 'my-org-download-method)
 
 ;;; custom-post.el ends here
