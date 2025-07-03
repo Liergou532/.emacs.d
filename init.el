@@ -153,11 +153,14 @@ Avoid placing large files like EAF in `site-lisp` to prevent slow startup."
 (require 'init-elisp)
 (require 'init-c)
 (require 'init-go)
-(require 'init-rust)
+;;(require 'init-rust)
 (require 'init-python)
-(require 'init-ruby)
-(require 'init-elixir)
+;;(require 'init-ruby)
+;;(require 'init-elixir)
 (require 'init-web)
+
+;; my file
+(require 'init-beancount)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; init.el ends here
