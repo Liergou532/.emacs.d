@@ -115,17 +115,19 @@ FACE defaults to inheriting from default and highlight."
   (symbol-overlay-face-6 ((t (:inherit nerd-icons-orange :background unspecified :foreground unspecified :inverse-video t))))
   (symbol-overlay-face-7 ((t (:inherit nerd-icons-green :background unspecified :foreground unspecified :inverse-video t))))
   (symbol-overlay-face-8 ((t (:inherit nerd-icons-cyan :background unspecified :foreground unspecified :inverse-video t))))
-  :bind (:map symbol-overlay-mode-map
-         ("M-i" . symbol-overlay-put)
-         ("M-n" . symbol-overlay-jump-next)
-         ("M-p" . symbol-overlay-jump-prev)
-         ("M-N" . symbol-overlay-switch-forward)
-         ("M-P" . symbol-overlay-switch-backward)
-         ("M-C" . symbol-overlay-remove-all)
-         ([M-f3] . symbol-overlay-remove-all))
+  :bind (("M-i"  . symbol-overlay-put)
+         ("M-n"  . symbol-overlay-jump-next)
+         ("M-p"  . symbol-overlay-jump-prev)
+         ("M-N"  . symbol-overlay-switch-forward)
+         ("M-P"  . symbol-overlay-switch-backward)
+         ("M-C"  . symbol-overlay-remove-all)
+         ([M-f2] . symbol-overlay-mode)
+         ([M-f3] . symbol-overlay-put)
+         ([M-f4] . symbol-overlay-remove-all))
+  :bind-keymap ("M-s s"  . symbol-overlay-map)
   :hook (((prog-mode yaml-mode yaml-ts-mode) . symbol-overlay-mode)
-         (iedit-mode            . turn-off-symbol-overlay)
-         (iedit-mode-end        . turn-on-symbol-overlay))
+         (iedit-mode     . turn-off-symbol-overlay)
+         (iedit-mode-end . turn-on-symbol-overlay))
   :init (setq symbol-overlay-idle-time 0.3)
   :config
   (with-no-warnings
@@ -181,6 +183,8 @@ FACE defaults to inheriting from default and highlight."
 
 ;; Highlight TODO and similar keywords in comments and strings
 (use-package hl-todo
+  :autoload hl-todo-flymake hl-todo-search-and-highlight
+  :functions rg rg-read-files rg-project
   :custom-face
   (hl-todo ((t (:inherit default :height 0.9 :width condensed :weight bold :underline nil :inverse-video t))))
   :bind (:map hl-todo-mode-map
@@ -191,10 +195,7 @@ FACE defaults to inheriting from default and highlight."
          ("C-c t i" . hl-todo-insert)
          ("C-c t r" . hl-todo-rg-project)
          ("C-c t R" . hl-todo-rg))
-  :hook ((after-init . global-hl-todo-mode)
-         (hl-todo-mode . (lambda ()
-                           (add-hook 'flymake-diagnostic-functions
-                                     #'hl-todo-flymake nil t))))
+  :hook (after-init . global-hl-todo-mode)
   :init (setq hl-todo-require-punctuation t
               hl-todo-highlight-punctuation ":")
   :config
@@ -204,6 +205,17 @@ FACE defaults to inheriting from default and highlight."
     (add-to-list 'hl-todo-keyword-faces `(,keyword . "#d0bf8f")))
   (dolist (keyword '("DEBUG" "STUB"))
     (add-to-list 'hl-todo-keyword-faces `(,keyword . "#7cb8bb")))
+
+  ;; Integrate into flymake
+  (with-eval-after-load 'flymake
+    (add-hook 'flymake-diagnostic-functions #'hl-todo-flymake))
+
+  ;; Integrate into magit
+  (with-eval-after-load 'magit
+    (add-hook 'magit-log-wash-summary-hook
+              #'hl-todo-search-and-highlight t)
+    (add-hook 'magit-revision-wash-message-hook
+              #'hl-todo-search-and-highlight t))
 
   (defun hl-todo-rg (regexp &optional files dir)
     "Use `rg' to find all TODO or similar keywords."
@@ -312,7 +324,7 @@ FACE defaults to inheriting from default and highlight."
 ;; Pulse modified region
 (use-package goggles
   :diminish
-  :hook ((prog-mode text-mode) . goggles-mode))
+  :hook ((prog-mode text-mode conf-mode) . goggles-mode))
 
 (provide 'init-highlight)
 

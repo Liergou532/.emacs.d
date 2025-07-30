@@ -1,6 +1,6 @@
-;; init-rust.el --- Initialize Rust configurations.	-*- lexical-binding: t -*-
+;; init-ai.el --- Initialize AI configurations.	-*- lexical-binding: t -*-
 
-;; Copyright (C) 2019-2025 Vincent Zhang
+;; Copyright (C) 2025 Vincent Zhang
 
 ;; Author: Vincent Zhang <seagle0128@gmail.com>
 ;; URL: https://github.com/seagle0128/.emacs.d
@@ -25,32 +25,31 @@
 
 ;;; Commentary:
 ;;
-;; Rust configurations.
+;; AI configurations.
 ;;
 
 ;;; Code:
 
-;; Rust
-(use-package rust-mode
-  :functions centaur-treesit-available-p
-  :mode ("\\.rs\\'" . rustic-mode)
-  :init (setq rust-format-on-save t)
-  :config
-  ;; HACK: `global-treesit-auto-mode' will override `rust-mode'.
-  (define-derived-mode rustic-mode rust-mode "Rust"
-    "Major mode for Rust code.
+;; Interact with ChatGPT or other LLMs
+(use-package gptel
+  :functions gptel-make-openai
+  :custom
+  (gptel-model 'gpt-4o)
+  ;; Put the apikey to `auth-sources'
+  ;; Format: "machine {HOST} login {USER} password {APIKEY}"
+  ;; The LLM host is used as HOST, and "apikey" as USER.
+  (gptel-backend (gptel-make-openai "Github Models"
+                   :host "models.inference.ai.azure.com"
+                   :endpoint "/chat/completions?api-version=2024-05-01-preview"
+                   :stream t
+                   :key 'gptel-api-key
+                   :models '(gpt-4o))))
 
-\\{rust-mode-map}")
+;; Generate commit messages for magit
+(use-package gptel-magit
+  :hook (magit-mode . gptel-magit-install))
 
-  (when (centaur-treesit-available-p)
-    (setq rust-mode-treesitter-derive t)
-    (setq auto-mode-alist (delete '("\\.rs\\'" . rust-mode) auto-mode-alist))
-    (setq auto-mode-alist (delete '("\\.rs\\'" . rust-ts-mode) auto-mode-alist))))
-
-(use-package ron-mode
-  :mode ("\\.ron" . ron-mode))
-
-(provide 'init-rust)
+(provide 'init-ai)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; init-rust.el ends here
+;;; init-ai.el ends here
