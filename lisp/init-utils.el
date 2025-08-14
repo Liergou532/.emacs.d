@@ -36,7 +36,6 @@
 ;; Display available keybindings in popup
 (use-package which-key
   :diminish
-  :autoload which-key-posframe-mode
   :functions childframe-completion-workable-p
   :bind ("C-h M-m" . which-key-show-major-mode)
   :hook (after-init . which-key-mode)
@@ -65,6 +64,8 @@
   (which-key-add-key-based-replacements "C-x p" "project")
   (which-key-add-key-based-replacements "C-x r" "rect & bookmark")
   (which-key-add-key-based-replacements "C-x t" "tab & treemacs")
+  (which-key-add-key-based-replacements "C-x w" "window & highlight")
+  (which-key-add-key-based-replacements "C-x w ^" "window")
   (which-key-add-key-based-replacements "C-x x" "buffer")
   (which-key-add-key-based-replacements "C-x C-a" "edebug")
   (which-key-add-key-based-replacements "C-x RET" "coding-system")
@@ -107,6 +108,7 @@
   (when (childframe-completion-workable-p)
     (use-package which-key-posframe
       :diminish
+      :autoload which-key-posframe-mode
       :defines posframe-border-width
       :functions posframe-poshandler-frame-center-near-bottom
       :custom-face
@@ -127,7 +129,7 @@
                                   (interactive)
                                   (user-error "Scratch buffer cannot be killed")))
          ([remap revert-buffer] . persistent-scratch-restore)
-         ([remap revert-this-buffer] . persistent-scratch-restore))
+         ([remap revert-buffer-quick] . persistent-scratch-restore))
   :hook ((after-init . persistent-scratch-autosave-mode)
          (lisp-interaction-mode . persistent-scratch-mode))
   :init (setq persistent-scratch-backup-file-name-format "%Y-%m-%d"
