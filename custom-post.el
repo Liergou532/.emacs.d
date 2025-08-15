@@ -4,6 +4,9 @@
 ;;; Code:
 ;; This is my personal configurations.
 
+(require 'init-meow)
+(require 'init-beancount)
+
 (use-package org-download
   :ensure t
   :after org
