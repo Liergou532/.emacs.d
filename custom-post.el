@@ -12,7 +12,7 @@
   :ensure t
   :after org
   :bind (:map org-mode-map
-         ("c-<f2>" . org-download-screenshot)
+         ("<f2>" . org-download-scre1enshot)
          ("<f3>" . org-download-clipboard))
   :config
   ;; Directory where downloaded images are stored
@@ -63,15 +63,15 @@
 (setq org-src-tab-acts-natively 1);开启代码块语法缩进
 (setq org-edit-src-content-indentation 0);代码块初始缩进范围
 
-(use-package org
-  :after tex
-  :config
-  (setq org-highlight-latex-and-related '(native latex entities))
-  (setq org-pretty-entities t)
-  (setq org-pretty-entities-include-sub-superscripts nil)
-  (setq my/latex-preview-scale 2.0)
-  (setq org-format-latex-options
-        `(:foreground default :backgroud default :scale ,my/latex-preview-scale :html-foreground "Black" :html-backgroud "Transparent" :html-scale ,my/latex-preview-scale :matchers ("begin" "$1" "$" "$$" "\\" "\\[")))
-  (add-hook 'org-mode-hook #'org-cdlatex-mode))
+;; (use-package org
+;;   :after tex
+;;   :config
+;;   (setq org-highlight-latex-and-related '(native latex entities))
+;;   (setq org-pretty-entities t)
+;;   (setq org-pretty-entities-include-sub-superscripts nil)
+;;   (setq my/latex-preview-scale 2.0)
+;;   (setq org-format-latex-options
+;;         `(:foreground default :backgroud default :scale ,my/latex-preview-scale :html-foreground "Black" :html-backgroud "Transparent" :html-scale ,my/latex-preview-scale :matchers ("begin" "$1" "$" "$$" "\\" "\\[")))
+;;   (add-hook 'org-mode-hook #'org-cdlatex-mode))
 
 ;;; custom-post.el ends here

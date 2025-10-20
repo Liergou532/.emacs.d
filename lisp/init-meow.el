@@ -100,7 +100,7 @@
 
 By default moves 5 lines up.
 Will cancel all other selection, except char selection.
-
+`arg' is a arg
 Use with universal argument to move to the first line of buffer.
 Use with numeric argument to move specified number of lines."
   ;;(interactive "P")
