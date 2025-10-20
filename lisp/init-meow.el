@@ -1,7 +1,6 @@
 ;; init-meow.el --- Initialize meow configurations.	-*- lexical-binding: t -*-
 
 (defun meow-setup ()
-  ;;(setq meow-cheatsheet-layout meow-cheatsheet-layout-dvorak)
   (meow-leader-define-key
    '("1" . meow-digit-argument)
    '("2" . meow-digit-argument)
