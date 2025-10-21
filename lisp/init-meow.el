@@ -1,5 +1,54 @@
 ;; init-meow.el --- Initialize meow configurations.	-*- lexical-binding: t -*-
 
+(defun meow-tree-sitter-match-paren ()
+  "Jump to matching parenthesis/bracket/brace using Tree-sitter.
+Works like Vim's % command."
+  (interactive)
+  (unless (treesit-parser-list)
+    (error "Tree-sitter not available in current buffer"))
+  
+  (let* ((pos (point))
+         (node (treesit-node-at pos))
+         (node-type (when node (treesit-node-type node)))
+         (node-text (when node (treesit-node-text node)))
+         (parent (when node (treesit-node-parent node))))
+    
+    (cond
+     ;; 处理开括号: {, (, [
+     ((member node-text '("{" "(" "["))
+      (let ((end-node (treesit-node-child parent -1)))
+        (when (member (treesit-node-text end-node) '("}" ")" "]"))
+          (goto-char (treesit-node-start end-node)))))
+     
+     ;;处理闭括号: }, ), ]
+     ((member node-text '("}" ")" "]"))
+      (let ((start-node (treesit-node-child parent 0)))
+        (when (member (treesit-node-text start-node) '("{" "(" "["))
+          (goto-char (treesit-node-start start-node)))))
+     
+     ;; 处理在括号内部的情况
+     ((and parent (member (treesit-node-type parent)
+                          '("parenthesized_expression" 
+                            "compound_statement"
+                            "array_initializer")))
+      (let ((start-node (treesit-node-child parent 0))
+            (end-node (treesit-node-child parent -1)))
+        (cond
+         ;; 如果在开括号上
+         ((= pos (treesit-node-start start-node))
+          (goto-char (treesit-node-start end-node)))
+         ;; 如果在闭括号上
+         ((= pos (treesit-node-start end-node))
+          (goto-char (treesit-node-start start-node)))
+         ;; 如果在括号内部
+         (t
+          (if (<= (abs (- pos (treesit-node-start start-node)))
+                  (abs (- pos (treesit-node-start end-node))))
+              (goto-char (treesit-node-start start-node))
+            (goto-char (treesit-node-start end-node)))))))
+     
+     (t (error "Not at a parenthesis/bracket/brace")))))
+
 (defun meow-setup ()
   (meow-leader-define-key
    '("1" . meow-digit-argument)
@@ -28,7 +77,6 @@
    '("3" . meow-expand-3)
    '("2" . meow-expand-2)
    '("1" . meow-expand-1)
-   '("-" . negative-argument)
    '(";" . meow-reverse)
    '("<" . meow-beginning-of-thing)
    '(">" . meow-end-of-thing)
@@ -37,49 +85,21 @@
    '("b" . meow-back-word)
    '("B" . meow-back-symbol)
    '("c" . meow-change)
-   '("e" . meow-line)
+
    '("E" . meow-goto-line)
    '("f" . meow-find)
    '("g" . meow-cancel-selection)
    '("G" . meow-grab)
-   '("H" . meow-left-expand)
    '("i" . meow-insert)
    '("I" . meow-open-above)
+   '("j" . meow-join)
    '("k" . meow-kill)
    '("l" . meow-till)
    '("m" . meow-mark-word)
    '("M" . meow-mark-symbol)
+   '("N" . meow-next-expand)
    '("o" . meow-open-below)
    '("O" . meow-open-above)
-   '("P" . meow-prev-expand)
-   '("q" . meow-quit)
-   '("Q" . meow-goto-line)
-   '("r" . meow-replace)
-   '("R" . meow-swap-grab)
-   '("s" . meow-search)
-   '("u" . meow-undo)
-   '("U" . meow-undo-in-selection)
-   '("v" . meow-visit)
-   '("w" . meow-next-word)
-   '("W" . meow-next-symbol)
-   '("x" . meow-save)
-   '("X" . meow-sync-grab)
-   '("y" . meow-yank)
-   '("z" . meow-pop-selection)
-   '("'" . repeat)
-
-   ;; '("t" . meow-right)
-   ;; '("j" . meow-join)
-   ;; '("p" . meow-prev)
-   ;; '("n" . meow-next)
-   ;; '("h" . meow-left)
-   ;; '("d" . meow-delete)
-   ;; '("D" . meow-backward-delete)
-   ;; '("," . meow-inner-of-thing)
-   ;; '("." . meow-bounds-of-thing)
-   ;; '("N" . meow-next-expand)
-   ;; '("T" . meow-right-expand)
-
    ;; personal setup
    '("t" . meow-prev)
    '("T" . my-meow-prev)
@@ -91,16 +111,74 @@
    '("N" . meow-line)
    '("-" . meow-delete)
    '("_" . meow-backward-delete)
+   '("e" . meow-line)
+   '("%" . meow-tree-sitter-match-paren)
    '("." . meow-inner-of-thing)
    '("," . meow-bounds-of-thing)
-   '("<escape>" . ignore)))
+
+   '("q" . meow-quit)
+   '("Q" . meow-goto-line)
+   '("r" . meow-replace)
+   '("R" . meow-swap-grab)
+   '("s" . meow-search)
+
+   '("u" . meow-undo)
+   '("U" . meow-undo-in-selection)
+   '("v" . meow-visit)
+   '("w" . meow-next-word)
+   '("W" . meow-next-symbol)
+   '("x" . meow-save)
+   '("X" . meow-sync-grab)
+   '("y" . meow-yank)
+   '("z" . meow-pop-selection)
+   '("'" . repeat)
+   '("<escape>" . ignore))) 
+
+
+(defun meow-append ()
+  "Switch to INSERT state at the opposite end of selection.
+If no selection is active, move behind current character."
+  (interactive)
+  (if meow--temp-normal
+      (progn
+        (message "Quit temporary normal mode")
+        (meow--switch-state 'motion))
+    (cond
+     ((region-active-p)
+      (let ((beg (region-beginning))
+            (end (region-end)))
+        (if (> (point) beg)
+            (goto-char beg)
+          (goto-char end))
+        (meow--cancel-selection)))
+     (t
+      (when (and (not (eolp))
+                 (not (eobp)))
+        (forward-char 1))))
+    (meow--switch-state 'insert)
+    (setq-local meow--insert-pos (point))
+    (when meow-select-on-append
+      (setq-local meow--insert-activate-mark t))))
+
+(defun meow-insert ()
+  "Switch to INSERT state at current cursor position."
+  (interactive)
+  (if meow--temp-normal
+      (progn
+        (message "Quit temporary normal mode")
+        (meow--switch-state 'motion))
+    (meow--cancel-selection)
+    (meow--switch-state 'insert)
+    (setq-local meow--insert-pos (point))
+    (when meow-select-on-insert
+      (setq-local meow--insert-activate-mark t))))
 
 (defun my-meow-prev-num (arg)
   "Move to the previous line.
 
 By default moves 5 lines up.
 Will cancel all other selection, except char selection.
-`arg' is a arg
+
 Use with universal argument to move to the first line of buffer.
 Use with numeric argument to move specified number of lines."
   ;;(interactive "P")
@@ -113,16 +191,15 @@ Use with numeric argument to move specified number of lines."
     (setq this-command #'previous-line)
     (let ((lines (or (and (numberp arg) arg)
                      5)))
-      (forward-line (- lines))))))
+      (previous-line (- lines))))))
 
 (defun my-meow-prev (arg)
   (interactive "P")
-  (my-meow-prev-num 5)
+  (my-meow-prev-num -5)
   )
 (defun my-meow-next (arg)
   (interactive "P")
-  (my-meow-prev-num -5))
-
+  (my-meow-prev-num 5))
 
 (use-package meow
   :ensure t
